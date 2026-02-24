@@ -7,3 +7,4 @@ beautifulsoup4
 groq
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
+huggingface-hub

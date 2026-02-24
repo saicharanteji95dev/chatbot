@@ -1,32 +1,36 @@
 
 import os
-import requests
+from huggingface_hub import InferenceClient
 
-# Use HuggingFace Inference API (free) instead of local sentence-transformers
-# This avoids loading torch (~2GB) which doesn't fit in Render free tier (512MB)
-HF_API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
+# Use huggingface_hub SDK (handles URL routing automatically)
+# Much more reliable than raw HTTP calls to the inference API
 HF_TOKEN = os.getenv("HF_TOKEN", "")
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = InferenceClient(token=HF_TOKEN if HF_TOKEN else None)
+    return _client
 
 
 def embed_texts(texts):
     """
-    Embed texts using HuggingFace Inference API.
-    Returns the same 384-dim vectors as local all-MiniLM-L6-v2.
+    Embed texts using HuggingFace Inference API via official SDK.
+    Returns list of 384-dim vectors (same as local all-MiniLM-L6-v2).
     """
-    headers = {}
-    if HF_TOKEN:
-        headers["Authorization"] = f"Bearer {HF_TOKEN}"
-
-    response = requests.post(
-        HF_API_URL,
-        headers=headers,
-        json={"inputs": texts, "options": {"wait_for_model": True}},
-        timeout=60,
-    )
-
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"HuggingFace embedding API error {response.status_code}: {response.text}"
+    client = _get_client()
+    embeddings = []
+    for text in texts:
+        result = client.feature_extraction(
+            text, model="sentence-transformers/all-MiniLM-L6-v2"
         )
-
-    return response.json()
+        # Convert numpy array to list if needed
+        vec = result.tolist() if hasattr(result, "tolist") else result
+        # If 2D (tokens x hidden), mean-pool to get sentence embedding
+        if isinstance(vec, list) and vec and isinstance(vec[0], list):
+            vec = [sum(col) / len(col) for col in zip(*vec)]
+        embeddings.append(vec)
+    return embeddings
