@@ -4,7 +4,7 @@ import requests
 
 # Use HuggingFace Inference API (free) instead of local sentence-transformers
 # This avoids loading torch (~2GB) which doesn't fit in Render free tier (512MB)
-HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+HF_API_URL = "https://router.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 
 
