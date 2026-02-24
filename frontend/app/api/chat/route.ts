@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
 
-const BACKEND_URL =
-  process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function POST(req: NextRequest) {
+  if (!BACKEND_URL) {
+    throw new Error("BACKEND_URL environment variable is not set.");
+  }
   const { messages } = await req.json();
 
   const simpleMessages = messages.map((msg: any) => ({

@@ -15,9 +15,10 @@ app = FastAPI(title="i95Dev Chatbot API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:8000",
-        os.getenv("FRONTEND_URL", "http://localhost:3000")
+        origin for origin in [
+            os.getenv("FRONTEND_URL"),
+            os.getenv("BACKEND_URL"),
+        ] if origin
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -128,4 +129,4 @@ async def chat_stream_endpoint(request: ChatRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8005)
