@@ -11,14 +11,16 @@ load_dotenv()
 
 app = FastAPI(title="i95Dev Chatbot API")
 
-# CORS
+# CORS — supports localhost dev + any Render-deployed frontend URL
+_origins = list({
+    "http://localhost:3000",
+    "http://localhost:8000",
+    *[u.strip() for u in os.getenv("FRONTEND_URL", "").split(",") if u.strip()],
+})
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:8000",
-        os.getenv("FRONTEND_URL", "http://localhost:3000")
-    ],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
