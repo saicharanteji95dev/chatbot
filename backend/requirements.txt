@@ -1,0 +1,10 @@
+
+streamlit
+sentence-transformers
+pinecone
+python-dotenv
+requests
+beautifulsoup4
+groq
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
