@@ -3,13 +3,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional, Any, Dict
-from app.chatbot import chat, chat_stream   # ✅ FIX 1
+from app.chatbot import chat, chat_stream
 import os
+import logging
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="i95Dev Chatbot API")
+
+# Log env var status at startup (masked for security)
+for key in ["GROQ_API_KEY", "PINECONE_API_KEY", "PINECONE_INDEX_NAME", "FRONTEND_URL", "HF_TOKEN"]:
+    val = os.getenv(key, "")
+    status = f"{val[:4]}..." if len(val) > 4 else "NOT SET"
+    logger.info(f"ENV {key}: {status}")
 
 # CORS — supports localhost dev + any Render-deployed frontend URL
 _origins = list({
@@ -81,6 +91,8 @@ async def chat_endpoint(request: ChatRequest):
         return ChatResponse(content=response)
 
     except Exception as e:
+        logger.error(f"CHAT ERROR: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -125,6 +137,8 @@ async def chat_stream_endpoint(request: ChatRequest):
         )
 
     except Exception as e:
+        logger.error(f"STREAM ERROR: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
