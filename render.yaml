@@ -1,0 +1,38 @@
+services:
+  # ─── BACKEND ────────────────────────────────────────────────────────────────
+  - type: web
+    name: i95dev-chatbot-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_HOST
+        sync: false
+      - key: FRONTEND_URL
+        fromService:
+          name: i95dev-chatbot-frontend
+          type: web
+          property: host
+          # Render will fill in the deployed URL automatically
+
+  # ─── FRONTEND ───────────────────────────────────────────────────────────────
+  - type: web
+    name: i95dev-chatbot-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: i95dev-chatbot-backend
+          type: web
+          property: host
+          # Render will fill in the deployed URL automatically
+      - key: NODE_ENV
+        value: production
