@@ -9,15 +9,33 @@ import {
 import { Thread } from "@/components/assistant-ui/thread";
 import { MessageCircle, X, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AssistantCloud } from "assistant-cloud";
 
 export const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const cloud = React.useMemo(() => {
+    if (
+      process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL &&
+      process.env.NEXT_PUBLIC_ASSISTANT_API_KEY &&
+      process.env.NEXT_PUBLIC_ASSISTANT_WORKSPACE_ID
+    ) {
+      return new AssistantCloud({
+        baseUrl: process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL,
+        apiKey: process.env.NEXT_PUBLIC_ASSISTANT_API_KEY,
+        workspaceId: process.env.NEXT_PUBLIC_ASSISTANT_WORKSPACE_ID,
+        userId: "default-user",
+      });
+    }
+    return undefined;
+  }, []);
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
     }),
+    cloud: cloud,
   });
 
   // Close on Escape key

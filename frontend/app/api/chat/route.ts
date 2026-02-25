@@ -70,7 +70,51 @@ export async function POST(req: NextRequest) {
       // 🔥 SAFE CONTACT FORM DETECTION
       const lower = assistantMessage.toLowerCase();
 
+      // Check if the user explicitly asked for a contact form
+      const lastUserMessage = trimmedMessages
+        .filter((m: any) => m.role === "user")
+        .at(-1)?.content?.toLowerCase() || "";
+
+      const userRequestedForm =
+        lastUserMessage.includes("contact form") ||
+        lastUserMessage.includes("contact us") ||
+        lastUserMessage.includes("contact you") ||
+        lastUserMessage.includes("contact i95dev") ||
+        lastUserMessage.includes("contact someone") ||
+        lastUserMessage.includes("how to contact") ||
+        lastUserMessage.includes("how can i contact") ||
+        lastUserMessage.includes("how do i contact") ||
+        lastUserMessage.includes("get in touch") ||
+        lastUserMessage.includes("reach out") ||
+        lastUserMessage.includes("talk to someone") ||
+        lastUserMessage.includes("talk to a human") ||
+        lastUserMessage.includes("speak to someone") ||
+        lastUserMessage.includes("speak to an agent") ||
+        lastUserMessage.includes("contact support") ||
+        lastUserMessage.includes("contact sales") ||
+        lastUserMessage.includes("i want to contact") ||
+        lastUserMessage.includes("show me the form") ||
+        lastUserMessage.includes("fill a form") ||
+        lastUserMessage.includes("fill the form") ||
+        lastUserMessage.includes("send a message") ||
+        lastUserMessage.includes("give me a form") ||
+        lastUserMessage.includes("i need a form") ||
+        lastUserMessage.includes("submit a form") ||
+        lastUserMessage.includes("book a meeting") ||
+        lastUserMessage.includes("schedule a call") ||
+        lastUserMessage.includes("request a demo") ||
+        (/\bform\b/.test(lastUserMessage) && /\bcontact\b/.test(lastUserMessage));
+
+      // Also detect when the LLM itself signals it's showing a form
+      const assistantSignaledForm =
+        lower.includes("contact form has been provided") ||
+        lower.includes("a contact form") ||
+        lower.includes("form has been provided") ||
+        lower.includes("provided below for you to get in touch");
+
       if (
+        userRequestedForm ||
+        assistantSignaledForm ||
         lower.includes("don't have that information") ||
         lower.includes("do not have that information") ||
         lower.includes("based on the available data")
